@@ -1,0 +1,13 @@
+.post {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    transition: background-color 0.3s;
+
+    /* 任意の追加スタイルをここに */
+}
+
+.post:hover {
+    background-color: #e9e9e9;
+}
