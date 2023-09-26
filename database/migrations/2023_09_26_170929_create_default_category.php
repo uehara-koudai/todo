@@ -13,10 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('posts', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('categories', function (Blueprint $table) {
+            // 'category_name' カラム名を 'name' に変更
+            $table->renameColumn('category_name', 'name');
         });
+        // カテゴリーテーブルにデフォルトカテゴリーを追加
+        DB::table('categories')->insert([
+            'name' => 'タスク',
+        ]);
     }
 
     /**
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('posts');
+
     }
 };
