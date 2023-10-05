@@ -4,12 +4,26 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Task;
+use App\Models\Category;
 
 class TaskController extends Controller
 {
-    public function index(Task $task)//タスク一覧表示機能
+    public function index()
     {
-        return view('tasks.index')->with(['tasks' => $task->getPaginateByLimit(10)]);
+        // すべてのカテゴリーを取得
+        $categories = Category::all();
+        
+        // Complete以外のタスクを取得
+        $tasks = Task::where('state', '<>', 'Complete')->get();
+        
+        // Completeのタスクのみを取得
+        $completedTasks = Task::where('state', 'Complete')->get();
+
+        return view('tasks.index')->with([
+            'tasks' => $tasks,
+            'completedTasks' => $completedTasks,
+            'categories' => $categories,
+        ]);
     }
     
     public function store(Request $request)//タスク作成機能
@@ -31,7 +45,7 @@ class TaskController extends Controller
     {
         $taskTitle = $task->title; // 削除するタスクのタイトルを取得
         $task->delete();
-        return redirect()->route('index')->with('success', 'タスク「'.$taskTitle.'」が削除されました。');
+        return redirect()->route('index')->with('success', 'タスク「'.$taskTitle.'」が削除されました！');
     }
     
     //チェックボックス
@@ -42,5 +56,34 @@ class TaskController extends Controller
     
         return response()->json(['message' => 'Task updated successfully.']);
     }
+    
+    //カテゴリー内でのタスクの追加
+    public function storeTaskInCategory(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|integer|exists:categories,id',
+        ]);
+        
+        $validatedData = $request->all();
+        $validatedData['user_id'] = auth()->id();
+        
+        Task::create($validatedData);
+        return back()->with('success', 'タスクが追加されました！');
+    }
+    
+    
+    //タスク名編集のモーダルウィンドウ
+    public function update(Request $request, Task $task) {
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+        ]);
+    
+        $task->title = $validatedData['title'];
+        $task->save();
+    
+        return redirect()->route('index')->with('success', 'タスク名が更新されました！');
+    }
 
+    
 }
